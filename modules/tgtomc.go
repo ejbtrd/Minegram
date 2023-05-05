@@ -10,7 +10,7 @@ import (
 
 func handleExtras(data utils.ModuleData, m *tb.Message, dataType string) {
 	if len(*data.OnlinePlayers) > 0 {
-		sender := strings.ReplaceAll(m.Sender.FirstName+" "+m.Sender.LastName, "\n", "(nl)")
+		sender := strings.TrimSpace(strings.ReplaceAll(m.Sender.FirstName+" "+m.Sender.LastName, "\n", "(nl)"))
 		content := dataType
 		if m.IsReply() {
 			if m.ReplyTo.Text == "" {
@@ -30,7 +30,7 @@ func handleExtras(data utils.ModuleData, m *tb.Message, dataType string) {
 func TgToMc(data utils.ModuleData) {
 	(*data.TeleBot).Handle(tb.OnText, func(m *tb.Message) {
 		if len(*data.OnlinePlayers) > 0 {
-			sender := strings.ReplaceAll(m.Sender.FirstName+" "+m.Sender.LastName, "\n", "(nl)")
+			sender := strings.TrimSpace(strings.ReplaceAll(m.Sender.FirstName+" "+m.Sender.LastName, "\n", "(nl)"))
 			content := strings.ReplaceAll(m.Text, "\n", "(nl)")
 			if m.IsReply() {
 				if m.ReplyTo.Text == "" {
