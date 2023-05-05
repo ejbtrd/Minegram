@@ -16,9 +16,17 @@ func handleExtras(data utils.ModuleData, m *tb.Message, dataType string) {
 			if m.ReplyTo.Text == "" {
 				m.ReplyTo.Text = "[unsupported]"
 			}
-			_, err = io.WriteString(*data.Stdin, "tellraw @a [\"\",{\"text\":\"[TG] "+sender+"\",\"color\":\"aqua\"},{\"text\":\": \"},{\"text\":\"(reply)\",\"color\":\"yellow\",\"hoverEvent\":{\"action\":\"show_text\",\"contents\":\""+m.ReplyTo.Text+"\"}},{\"text\":\" "+content+"\",\"color\":\"dark_gray\",\"italic\":true}]\n")
+			if m.Caption != "" {
+				_, err = io.WriteString(*data.Stdin, "tellraw @a [\"\",{\"text\":\"[TG] "+sender+"\",\"color\":\"aqua\"},{\"text\":\": \"},{\"text\":\"(reply)\",\"color\":\"yellow\",\"hoverEvent\":{\"action\":\"show_text\",\"contents\":\""+m.ReplyTo.Text+"\"}},{\"text\":\" "+content+" - "+m.Caption+"\",\"color\":\"dark_gray\",\"italic\":true}]\n")
+			} else {
+				_, err = io.WriteString(*data.Stdin, "tellraw @a [\"\",{\"text\":\"[TG] "+sender+"\",\"color\":\"aqua\"},{\"text\":\": \"},{\"text\":\"(reply)\",\"color\":\"yellow\",\"hoverEvent\":{\"action\":\"show_text\",\"contents\":\""+m.ReplyTo.Text+"\"}},{\"text\":\" "+content+"\",\"color\":\"dark_gray\",\"italic\":true}]\n")
+			}
 		} else {
-			_, err = io.WriteString(*data.Stdin, "tellraw @a [\"\",{\"text\":\"[TG] "+sender+"\",\"color\":\"aqua\"},{\"text\":\": \"},{\"text\":\""+content+"\",\"color\":\"dark_gray\",\"italic\":true}]\n")
+			if m.Caption != "" {
+				_, err = io.WriteString(*data.Stdin, "tellraw @a [\"\",{\"text\":\"[TG] "+sender+"\",\"color\":\"aqua\"},{\"text\":\": \"},{\"text\":\""+content+" - "+m.Caption+"\",\"color\":\"dark_gray\",\"italic\":true}]\n")
+			} else {
+				_, err = io.WriteString(*data.Stdin, "tellraw @a [\"\",{\"text\":\"[TG] "+sender+"\",\"color\":\"aqua\"},{\"text\":\": \"},{\"text\":\""+content+"\",\"color\":\"dark_gray\",\"italic\":true}]\n")
+			}
 		}
 	}
 }
