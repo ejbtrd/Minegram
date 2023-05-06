@@ -1,8 +1,8 @@
 package modules
 
 import (
-	"Minegram/utils"
 	"io"
+	"minegram/utils"
 	"strings"
 
 	tb "gopkg.in/tucnak/telebot.v2"

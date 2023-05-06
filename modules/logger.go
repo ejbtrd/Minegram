@@ -1,8 +1,8 @@
 package modules
 
 import (
-	"Minegram/utils"
 	"fmt"
+	"minegram/utils"
 	"strings"
 
 	"github.com/fatih/color"

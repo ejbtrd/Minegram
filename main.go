@@ -7,8 +7,8 @@ import (
 	"runtime"
 	"sync"
 
-	"Minegram/modules"
-	"Minegram/utils"
+	"minegram/modules"
+	"minegram/utils"
 
 	"github.com/fatih/color"
 

@@ -1,9 +1,9 @@
 package modules
 
 import (
-	"Minegram/utils"
 	"bufio"
 	"io"
+	"minegram/utils"
 	"regexp"
 	"strings"
 	"time"

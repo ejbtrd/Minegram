@@ -1,10 +1,10 @@
 package modules
 
 import (
-	"Minegram/utils"
 	"bufio"
 	"fmt"
 	"io"
+	"minegram/utils"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -22,7 +22,7 @@ import (
 // for further functioning of the
 // wrapper
 func Core(data utils.ModuleData) {
-	fmt.Println("Initialising Minegram...")
+	fmt.Println("Initialising minegram...")
 	(*data.Waitgroup).Add(1)
 	res := utils.ReadConfig("config.ini")
 
