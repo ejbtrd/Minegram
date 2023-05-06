@@ -2,8 +2,9 @@ package modules
 
 import (
 	"fmt"
-	"minegram/utils"
 	"strings"
+
+	"minegram/utils"
 
 	"github.com/fatih/color"
 )

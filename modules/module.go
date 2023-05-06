@@ -1,4 +1,6 @@
 package modules
 
-var err error
-var logFeed = make(chan string)
+var (
+	err     error
+	logFeed = make(chan string)
+)

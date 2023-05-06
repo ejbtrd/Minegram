@@ -3,9 +3,10 @@ package modules
 import (
 	"fmt"
 	"io"
-	"minegram/utils"
 	"strconv"
 	"strings"
+
+	"minegram/utils"
 
 	tb "gopkg.in/tucnak/telebot.v2"
 )
@@ -26,7 +27,7 @@ func Auth(data utils.ModuleData) {
 			return
 		}
 
-		var plSplit = strings.Split(m.Payload, " ")
+		plSplit := strings.Split(m.Payload, " ")
 		ign := plSplit[0]
 
 		var existing utils.Player
