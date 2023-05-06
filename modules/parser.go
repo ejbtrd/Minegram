@@ -42,95 +42,116 @@ func Parser(data utils.ModuleData) {
 				*data.NeedResult = false
 			} else {
 				go func() {
-					if strings.Contains(message, "INFO") {
-						if chatRegex.MatchString(message) {
-							result := chatRegex.FindStringSubmatch(message)
-							if len(result) == 3 {
-								_, _ = (*data.TeleBot).Send(*data.TargetChat, "`"+result[1]+"`"+"**:** "+result[2], "Markdown")
-							}
-						} else if joinRegex.MatchString(message) || joinRegexSpigotPaper.MatchString(message) {
-							result := joinRegex.FindStringSubmatch(message)
-							if len(result) == 2 {
-								user := result[1]
-								if !utils.ContainsPlayer(*data.OnlinePlayers, user) {
-									newPlayer := utils.OnlinePlayer{InGameName: user, IsAuthd: false}
-									*data.OnlinePlayers = append(*data.OnlinePlayers, newPlayer)
-									toSend := "`" + user + "`" + " joined the server."
-									if *data.IsAuthEnabled {
-										toSend += "\nUse /auth to authenticate."
-									}
-									_, _ = (*data.TeleBot).Send(*data.TargetChat, toSend, "Markdown")
-									if !*data.IsAuthEnabled {
-										return
-									}
-									var currentUser utils.Player
-									(*data.GormDb).First(&currentUser, "mc_ign = ?", user)
+					if !strings.Contains(message, "INFO") {
+						return
+					}
 
-									startCoords := utils.CliExec(*data.Stdin, "data get entity "+user+" Pos", data.NeedResult, *data.ConsoleOut)
-									coords := entityPosRegex.FindStringSubmatch(startCoords)
+					if chatRegex.MatchString(message) {
+						result := chatRegex.FindStringSubmatch(message)
 
-									dimensionStr := utils.CliExec(*data.Stdin, "data get entity "+user+" Dimension", data.NeedResult, *data.ConsoleOut)
-									dimension := dimensionRegex.FindStringSubmatch(dimensionStr)
-
-									gameTypeStr := utils.CliExec(*data.Stdin, "data get entity "+user+" playerGameType", data.NeedResult, *data.ConsoleOut)
-									rGameType := gameTypeRegex.FindStringSubmatch(gameTypeStr)
-
-									gameType := "survival"
-									if len(rGameType) > 0 {
-										gameType = utils.GetGameType(rGameType[1])
-									}
-
-									(*data.GormDb).Model(&currentUser).Update("last_game_mode", gameType)
-									(*data.GormDb).Model(&currentUser).Update("did_user_auth", false)
-
-									_, _ = io.WriteString(*data.Stdin, "effect give "+user+" minecraft:blindness 999999\n")
-									_, _ = io.WriteString(*data.Stdin, "gamemode spectator "+user+"\n")
-									_, _ = io.WriteString(*data.Stdin, "tellraw "+user+" [\"\",{\"text\":\"If you haven't linked before, send \"},{\"text\":\"/link "+newPlayer.InGameName+" \",\"color\":\"green\"},{\"text\":\"to \"},{\"text\":\"@"+(*data.TeleBot).Me.Username+"\",\"color\":\"yellow\"},{\"text\":\"\\nIf you have \"},{\"text\":\"linked \",\"color\":\"green\"},{\"text\":\"your account, send \"},{\"text\":\"/auth \",\"color\":\"aqua\"},{\"text\":\"to \"},{\"text\":\"@"+(*data.TeleBot).Me.Username+"\",\"color\":\"yellow\"}]\n")
-
-									if len(coords) != 4 || len(dimension) != 2 {
-										return
-									}
-
-									for {
-										player := utils.GetOnlinePlayer(user, *data.OnlinePlayers)
-
-										if player.IsAuthd || player.InGameName == "" {
-											break
-										}
-
-										command := "execute in " + dimension[1] + " run tp " + user + " " + coords[1] + " " + coords[2] + " " + coords[3] + "\n"
-										_, _ = io.WriteString(*data.Stdin, command)
-										time.Sleep(400 * time.Millisecond)
-									}
-								}
-							}
-
-						} else if leaveRegex.MatchString(message) {
-							result := leaveRegex.FindStringSubmatch(message)
-							if len(result) == 2 {
-								*data.OnlinePlayers = utils.RemovePlayer(*data.OnlinePlayers, result[1])
-								_, _ = (*data.TeleBot).Send(*data.TargetChat, "`"+result[1]+"`"+" has left the server.", "Markdown")
-							}
-						} else if advancementRegex.MatchString(message) {
-							result := advancementRegex.FindStringSubmatch(message)
-							if len(result) == 3 {
-								_, _ = (*data.TeleBot).Send(*data.TargetChat, "`"+result[1]+"`"+" has made the advancement `"+result[2]+"`.", "Markdown")
-							}
-						} else if deathRegex.MatchString(message) {
-							result := simpleOutputRegex.FindStringSubmatch(message)
-							if len(result) == 2 {
-								sep := strings.Split(result[1], " ")
-								startCoords := utils.CliExec(*data.Stdin, "data get entity "+sep[0]+" Pos", data.NeedResult, *data.ConsoleOut)
-								coords := simplifiedEPRegex.FindStringSubmatch(startCoords)
-								toSend := "`" + sep[0] + "` " + strings.Join(sep[1:], " ")
-								if len(coords) == 4 {
-									toSend += " at (`" + coords[1] + " " + coords[2] + " " + coords[3] + "`)"
-								}
-								_, _ = (*data.TeleBot).Send(*data.TargetChat, toSend+".", "Markdown")
-							}
-						} else if strings.Contains(message, "For help, type") {
-							utils.CliExec(*data.Stdin, "say Server initialised!", data.NeedResult, *data.ConsoleOut)
+						if len(result) != 3 {
+							return
 						}
+
+						_, _ = (*data.TeleBot).Send(*data.TargetChat, "`"+result[1]+"`"+"**:** "+result[2], "Markdown")
+					} else if joinRegex.MatchString(message) || joinRegexSpigotPaper.MatchString(message) {
+						result := joinRegex.FindStringSubmatch(message)
+
+						if len(result) != 2 {
+							return
+						}
+
+						user := result[1]
+
+						if utils.ContainsPlayer(*data.OnlinePlayers, user) {
+							return
+						}
+
+						newPlayer := utils.OnlinePlayer{InGameName: user, IsAuthd: false}
+						*data.OnlinePlayers = append(*data.OnlinePlayers, newPlayer)
+						toSend := "`" + user + "`" + " joined the server."
+						if *data.IsAuthEnabled {
+							toSend += "\nUse /auth to authenticate."
+						}
+						_, _ = (*data.TeleBot).Send(*data.TargetChat, toSend, "Markdown")
+						if !*data.IsAuthEnabled {
+							return
+						}
+						var currentUser utils.Player
+						(*data.GormDb).First(&currentUser, "mc_ign = ?", user)
+
+						startCoords := utils.CliExec(*data.Stdin, "data get entity "+user+" Pos", data.NeedResult, *data.ConsoleOut)
+						coords := entityPosRegex.FindStringSubmatch(startCoords)
+
+						dimensionStr := utils.CliExec(*data.Stdin, "data get entity "+user+" Dimension", data.NeedResult, *data.ConsoleOut)
+						dimension := dimensionRegex.FindStringSubmatch(dimensionStr)
+
+						gameTypeStr := utils.CliExec(*data.Stdin, "data get entity "+user+" playerGameType", data.NeedResult, *data.ConsoleOut)
+						rGameType := gameTypeRegex.FindStringSubmatch(gameTypeStr)
+
+						gameType := "survival"
+						if len(rGameType) > 0 {
+							gameType = utils.GetGameType(rGameType[1])
+						}
+
+						(*data.GormDb).Model(&currentUser).Update("last_game_mode", gameType)
+						(*data.GormDb).Model(&currentUser).Update("did_user_auth", false)
+
+						_, _ = io.WriteString(*data.Stdin, "effect give "+user+" minecraft:blindness 999999\n")
+						_, _ = io.WriteString(*data.Stdin, "gamemode spectator "+user+"\n")
+						_, _ = io.WriteString(*data.Stdin, "tellraw "+user+" [\"\",{\"text\":\"If you haven't linked before, send \"},{\"text\":\"/link "+newPlayer.InGameName+" \",\"color\":\"green\"},{\"text\":\"to \"},{\"text\":\"@"+(*data.TeleBot).Me.Username+"\",\"color\":\"yellow\"},{\"text\":\"\\nIf you have \"},{\"text\":\"linked \",\"color\":\"green\"},{\"text\":\"your account, send \"},{\"text\":\"/auth \",\"color\":\"aqua\"},{\"text\":\"to \"},{\"text\":\"@"+(*data.TeleBot).Me.Username+"\",\"color\":\"yellow\"}]\n")
+
+						if len(coords) != 4 || len(dimension) != 2 {
+							return
+						}
+
+						for {
+							player := utils.GetOnlinePlayer(user, *data.OnlinePlayers)
+
+							if player.IsAuthd || player.InGameName == "" {
+								break
+							}
+
+							command := "execute in " + dimension[1] + " run tp " + user + " " + coords[1] + " " + coords[2] + " " + coords[3] + "\n"
+							_, _ = io.WriteString(*data.Stdin, command)
+							time.Sleep(400 * time.Millisecond)
+						}
+					} else if leaveRegex.MatchString(message) {
+						result := leaveRegex.FindStringSubmatch(message)
+
+						if len(result) != 2 {
+							return
+						}
+
+						*data.OnlinePlayers = utils.RemovePlayer(*data.OnlinePlayers, result[1])
+						_, _ = (*data.TeleBot).Send(*data.TargetChat, "`"+result[1]+"`"+" has left the server.", "Markdown")
+					} else if advancementRegex.MatchString(message) {
+						result := advancementRegex.FindStringSubmatch(message)
+
+						if len(result) != 3 {
+							return
+						}
+
+						_, _ = (*data.TeleBot).Send(*data.TargetChat, "`"+result[1]+"`"+" has made the advancement `"+result[2]+"`.", "Markdown")
+					} else if deathRegex.MatchString(message) {
+						result := simpleOutputRegex.FindStringSubmatch(message)
+
+						if len(result) != 2 {
+							return
+						}
+
+						sep := strings.Split(result[1], " ")
+						startCoords := utils.CliExec(*data.Stdin, "data get entity "+sep[0]+" Pos", data.NeedResult, *data.ConsoleOut)
+						coords := simplifiedEPRegex.FindStringSubmatch(startCoords)
+						toSend := "`" + sep[0] + "` " + strings.Join(sep[1:], " ")
+
+						if len(coords) == 4 {
+							toSend += " at (`" + coords[1] + " " + coords[2] + " " + coords[3] + "`)"
+						}
+
+						_, _ = (*data.TeleBot).Send(*data.TargetChat, toSend+".", "Markdown")
+					} else if strings.Contains(message, "For help, type") {
+						utils.CliExec(*data.Stdin, "say Server initialised!", data.NeedResult, *data.ConsoleOut)
 					}
 				}()
 			}
