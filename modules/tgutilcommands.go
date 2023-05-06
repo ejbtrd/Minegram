@@ -2,8 +2,9 @@ package modules
 
 import (
 	"fmt"
-	"minegram/utils"
 	"strconv"
+
+	"minegram/utils"
 
 	tb "gopkg.in/tucnak/telebot.v2"
 )

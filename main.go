@@ -17,22 +17,26 @@ import (
 )
 
 /* configuration options */
-var cmd string
-var tok string
-var admUsers []string
-var authEnabled = true
+var (
+	cmd         string
+	tok         string
+	admUsers    []string
+	authEnabled = true
+)
 
 /* shared vars */
-var online = []utils.OnlinePlayer{}
-var cliOutput = make(chan string)
-var needResult = false
-var db *gorm.DB
-var b *tb.Bot
-var execCmd *exec.Cmd
-var stdin io.WriteCloser
-var stdout io.ReadCloser
-var targetChat tb.Recipient
-var wg sync.WaitGroup
+var (
+	online     = []utils.OnlinePlayer{}
+	cliOutput  = make(chan string)
+	needResult = false
+	db         *gorm.DB
+	b          *tb.Bot
+	execCmd    *exec.Cmd
+	stdin      io.WriteCloser
+	stdout     io.ReadCloser
+	targetChat tb.Recipient
+	wg         sync.WaitGroup
+)
 
 /* shared error */
 var err error
@@ -44,7 +48,8 @@ func plugModule(module utils.ModuleFunction) {
 		IsAuthEnabled: &authEnabled, OnlinePlayers: &online,
 		ConsoleOut: &cliOutput, NeedResult: &needResult,
 		GormDb: &db, TeleBot: &b, ExecCmd: &execCmd, Stdin: &stdin,
-		Stdout: &stdout, TargetChat: &targetChat, Waitgroup: &wg})
+		Stdout: &stdout, TargetChat: &targetChat, Waitgroup: &wg,
+	})
 }
 
 func main() {
