@@ -24,7 +24,7 @@ import (
 func Core(data utils.ModuleData) {
 	fmt.Println("Initialising minegram...")
 	(*data.Waitgroup).Add(1)
-	res := utils.ReadConfig("config.ini")
+	config := utils.ReadConfig("config.ini")
 
 	*data.GormDb, err = gorm.Open(sqlite.Open("minegram.db"), &gorm.Config{})
 
@@ -34,11 +34,11 @@ func Core(data utils.ModuleData) {
 
 	_ = (*data.GormDb).AutoMigrate(&utils.Player{})
 
-	*data.CmdToRun = res["command"]
-	*data.TgBotToken = res["bot_token"]
-	tchat := res["target_chat"]
-	admUsersRaw := res["admin_usernames"]
-	authEnabledRaw := res["auth_enabled"]
+	*data.CmdToRun = config["command"]
+	*data.TgBotToken = config["bot_token"]
+	tchat := config["target_chat"]
+	admUsersRaw := config["admin_usernames"]
+	authEnabledRaw := config["auth_enabled"]
 
 	if *data.CmdToRun == "" {
 		fmt.Println("Please enter a 'command' in the config!")
