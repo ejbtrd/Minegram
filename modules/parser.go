@@ -60,48 +60,51 @@ func Parser(data utils.ModuleData) {
 										toSend += "\nUse /auth to authenticate."
 									}
 									_, _ = (*data.TeleBot).Send(*data.TargetChat, toSend, "Markdown")
-									if *data.IsAuthEnabled {
-										var currentUser utils.Player
-										(*data.GormDb).First(&currentUser, "mc_ign = ?", user)
+									if !*data.IsAuthEnabled {
+										return
+									}
+									var currentUser utils.Player
+									(*data.GormDb).First(&currentUser, "mc_ign = ?", user)
 
-										startCoords := utils.CliExec(*data.Stdin, "data get entity "+user+" Pos", data.NeedResult, *data.ConsoleOut)
-										coords := entityPosRegex.FindStringSubmatch(startCoords)
+									startCoords := utils.CliExec(*data.Stdin, "data get entity "+user+" Pos", data.NeedResult, *data.ConsoleOut)
+									coords := entityPosRegex.FindStringSubmatch(startCoords)
 
-										dimensionStr := utils.CliExec(*data.Stdin, "data get entity "+user+" Dimension", data.NeedResult, *data.ConsoleOut)
-										dimension := dimensionRegex.FindStringSubmatch(dimensionStr)
+									dimensionStr := utils.CliExec(*data.Stdin, "data get entity "+user+" Dimension", data.NeedResult, *data.ConsoleOut)
+									dimension := dimensionRegex.FindStringSubmatch(dimensionStr)
 
-										gameTypeStr := utils.CliExec(*data.Stdin, "data get entity "+user+" playerGameType", data.NeedResult, *data.ConsoleOut)
-										rGameType := gameTypeRegex.FindStringSubmatch(gameTypeStr)
+									gameTypeStr := utils.CliExec(*data.Stdin, "data get entity "+user+" playerGameType", data.NeedResult, *data.ConsoleOut)
+									rGameType := gameTypeRegex.FindStringSubmatch(gameTypeStr)
 
-										gameType := "survival"
-										if len(rGameType) > 0 {
-											gameType = utils.GetGameType(rGameType[1])
+									gameType := "survival"
+									if len(rGameType) > 0 {
+										gameType = utils.GetGameType(rGameType[1])
+									}
+
+									(*data.GormDb).Model(&currentUser).Update("last_game_mode", gameType)
+									(*data.GormDb).Model(&currentUser).Update("did_user_auth", false)
+
+									_, _ = io.WriteString(*data.Stdin, "effect give "+user+" minecraft:blindness 999999\n")
+									_, _ = io.WriteString(*data.Stdin, "gamemode spectator "+user+"\n")
+									_, _ = io.WriteString(*data.Stdin, "tellraw "+user+" [\"\",{\"text\":\"If you haven't linked before, send \"},{\"text\":\"/link "+newPlayer.InGameName+" \",\"color\":\"green\"},{\"text\":\"to \"},{\"text\":\"@"+(*data.TeleBot).Me.Username+"\",\"color\":\"yellow\"},{\"text\":\"\\nIf you have \"},{\"text\":\"linked \",\"color\":\"green\"},{\"text\":\"your account, send \"},{\"text\":\"/auth \",\"color\":\"aqua\"},{\"text\":\"to \"},{\"text\":\"@"+(*data.TeleBot).Me.Username+"\",\"color\":\"yellow\"}]\n")
+
+									if len(coords) != 4 || len(dimension) != 2 {
+										return
+									}
+
+									for {
+										player := utils.GetOnlinePlayer(user, *data.OnlinePlayers)
+
+										if player.IsAuthd || player.InGameName == "" {
+											break
 										}
 
-										(*data.GormDb).Model(&currentUser).Update("last_game_mode", gameType)
-										(*data.GormDb).Model(&currentUser).Update("did_user_auth", false)
-
-										_, _ = io.WriteString(*data.Stdin, "effect give "+user+" minecraft:blindness 999999\n")
-										_, _ = io.WriteString(*data.Stdin, "gamemode spectator "+user+"\n")
-										_, _ = io.WriteString(*data.Stdin, "tellraw "+user+" [\"\",{\"text\":\"If you haven't linked before, send \"},{\"text\":\"/link "+newPlayer.InGameName+" \",\"color\":\"green\"},{\"text\":\"to \"},{\"text\":\"@"+(*data.TeleBot).Me.Username+"\",\"color\":\"yellow\"},{\"text\":\"\\nIf you have \"},{\"text\":\"linked \",\"color\":\"green\"},{\"text\":\"your account, send \"},{\"text\":\"/auth \",\"color\":\"aqua\"},{\"text\":\"to \"},{\"text\":\"@"+(*data.TeleBot).Me.Username+"\",\"color\":\"yellow\"}]\n")
-
-										if len(coords) == 4 {
-											if len(dimension) == 2 {
-												for {
-													player := utils.GetOnlinePlayer(user, *data.OnlinePlayers)
-													if player.IsAuthd || player.InGameName == "" {
-														break
-													} else {
-														command := "execute in " + dimension[1] + " run tp " + user + " " + coords[1] + " " + coords[2] + " " + coords[3] + "\n"
-														_, _ = io.WriteString(*data.Stdin, command)
-														time.Sleep(400 * time.Millisecond)
-													}
-												}
-											}
-										}
+										command := "execute in " + dimension[1] + " run tp " + user + " " + coords[1] + " " + coords[2] + " " + coords[3] + "\n"
+										_, _ = io.WriteString(*data.Stdin, command)
+										time.Sleep(400 * time.Millisecond)
 									}
 								}
 							}
+
 						} else if leaveRegex.MatchString(m) {
 							result := leaveRegex.FindStringSubmatch(m)
 							if len(result) == 2 {
