@@ -2,7 +2,9 @@ package modules
 
 import (
 	"Minegram/utils"
+	"fmt"
 	"io"
+	"strconv"
 	"strings"
 
 	tb "gopkg.in/tucnak/telebot.v2"
@@ -30,7 +32,7 @@ func Auth(data utils.ModuleData) {
 		var existing utils.Player
 		(*data.GormDb).First(&existing, "mc_ign = ?", ign)
 		if existing.McIgn != "" {
-			if existing.TgUsn == m.Sender.Username {
+			if existing.TgID == m.Sender.ID {
 				(*data.TeleBot).Reply(m, "You have already linked this IGN with your account!")
 			} else {
 				(*data.TeleBot).Reply(m, "This IGN has already been linked to a different Telegram account!")
@@ -38,20 +40,21 @@ func Auth(data utils.ModuleData) {
 			return
 		}
 
-		var existingUsn utils.Player
-		(*data.GormDb).First(&existingUsn, "tg_usn = ?", m.Sender.Username)
-		if existingUsn.TgUsn == "" {
-			(*data.GormDb).Create(&utils.Player{McIgn: ign, TgUsn: m.Sender.Username, LastGameMode: "survival", DidUserAuth: false})
-			(*data.TeleBot).Reply(m, "The Minecraft IGN `"+ign+"` has been successfully linked to the telegram account `@"+m.Sender.Username+"`!", "Markdown")
+		var existingID utils.Player
+		(*data.GormDb).First(&existingID, "tg_id = ?", m.Sender.ID)
+		if existingID.TgID == 0 {
+			fmt.Println("Linking '" + strconv.FormatInt(m.Sender.ID, 10) + "' to '" + ign + "'")
+			(*data.GormDb).Create(&utils.Player{McIgn: ign, TgID: m.Sender.ID, LastGameMode: "survival", DidUserAuth: false})
+			(*data.TeleBot).Reply(m, "The Minecraft IGN `"+ign+"` has been successfully linked to the telegram account with id `"+strconv.FormatInt(m.Sender.ID, 10)+"`!", "Markdown")
 			return
 		}
 
-		oldIgn := existingUsn.McIgn
+		oldIgn := existingID.McIgn
 		if len(plSplit) != 2 {
 			(*data.TeleBot).Reply(m, "Your account will be un-linked from `"+oldIgn+"` and linked to `"+ign+"`. To confirm this action, use:\n\n`/link "+ign+" confirm`", "Markdown")
 
 			if strings.ToLower(plSplit[1]) == "confirm" {
-				(*data.GormDb).Model(&existingUsn).Update("mc_ign", ign)
+				(*data.GormDb).Model(&existingID).Update("mc_ign", ign)
 				(*data.TeleBot).Reply(m, "Your account has been un-linked from `"+oldIgn+"` and linked to `"+ign+"`.", "Markdown")
 			} else {
 				(*data.TeleBot).Reply(m, "The second argument must be '`confirm`'!", "Markdown")
@@ -71,7 +74,7 @@ func Auth(data utils.ModuleData) {
 		}
 
 		var linked utils.Player
-		(*data.GormDb).First(&linked, "tg_usn = ?", m.Sender.Username)
+		(*data.GormDb).First(&linked, "tg_id = ?", m.Sender.ID)
 		if linked.McIgn == "" {
 			(*data.TeleBot).Reply(m, "You need to use `/link` before trying to `auth`", "Markdown")
 			return
@@ -82,7 +85,7 @@ func Auth(data utils.ModuleData) {
 			return
 		}
 
-		if linked.TgUsn != m.Sender.Username {
+		if linked.TgID != m.Sender.ID {
 			(*data.TeleBot).Reply(m, "This Telegram account is not linked to the IGN `"+linked.McIgn+"`!", "Markdown")
 			return
 		}

@@ -14,7 +14,7 @@ type ModuleFunction func(ModuleData)
 type Player struct {
 	gorm.Model
 	McIgn        string
-	TgUsn        string
+	TgID         int64
 	LastGameMode string
 	DidUserAuth  bool
 }
