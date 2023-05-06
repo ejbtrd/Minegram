@@ -34,22 +34,22 @@ func Parser(data utils.ModuleData) {
 	go func() {
 		defer (*data.Waitgroup).Done()
 		for scanner.Scan() {
-			m := scanner.Text()
-			logFeed <- m
+			message := scanner.Text()
+			logFeed <- message
 
 			if *data.NeedResult {
-				*data.ConsoleOut <- m
+				*data.ConsoleOut <- message
 				*data.NeedResult = false
 			} else {
 				go func() {
-					if strings.Contains(m, "INFO") {
-						if chatRegex.MatchString(m) {
-							result := chatRegex.FindStringSubmatch(m)
+					if strings.Contains(message, "INFO") {
+						if chatRegex.MatchString(message) {
+							result := chatRegex.FindStringSubmatch(message)
 							if len(result) == 3 {
 								_, _ = (*data.TeleBot).Send(*data.TargetChat, "`"+result[1]+"`"+"**:** "+result[2], "Markdown")
 							}
-						} else if joinRegex.MatchString(m) || joinRegexSpigotPaper.MatchString(m) {
-							result := joinRegex.FindStringSubmatch(m)
+						} else if joinRegex.MatchString(message) || joinRegexSpigotPaper.MatchString(message) {
+							result := joinRegex.FindStringSubmatch(message)
 							if len(result) == 2 {
 								user := result[1]
 								if !utils.ContainsPlayer(*data.OnlinePlayers, user) {
@@ -105,19 +105,19 @@ func Parser(data utils.ModuleData) {
 								}
 							}
 
-						} else if leaveRegex.MatchString(m) {
-							result := leaveRegex.FindStringSubmatch(m)
+						} else if leaveRegex.MatchString(message) {
+							result := leaveRegex.FindStringSubmatch(message)
 							if len(result) == 2 {
 								*data.OnlinePlayers = utils.RemovePlayer(*data.OnlinePlayers, result[1])
 								_, _ = (*data.TeleBot).Send(*data.TargetChat, "`"+result[1]+"`"+" has left the server.", "Markdown")
 							}
-						} else if advancementRegex.MatchString(m) {
-							result := advancementRegex.FindStringSubmatch(m)
+						} else if advancementRegex.MatchString(message) {
+							result := advancementRegex.FindStringSubmatch(message)
 							if len(result) == 3 {
 								_, _ = (*data.TeleBot).Send(*data.TargetChat, "`"+result[1]+"`"+" has made the advancement `"+result[2]+"`.", "Markdown")
 							}
-						} else if deathRegex.MatchString(m) {
-							result := simpleOutputRegex.FindStringSubmatch(m)
+						} else if deathRegex.MatchString(message) {
+							result := simpleOutputRegex.FindStringSubmatch(message)
 							if len(result) == 2 {
 								sep := strings.Split(result[1], " ")
 								startCoords := utils.CliExec(*data.Stdin, "data get entity "+sep[0]+" Pos", data.NeedResult, *data.ConsoleOut)
@@ -128,7 +128,7 @@ func Parser(data utils.ModuleData) {
 								}
 								_, _ = (*data.TeleBot).Send(*data.TargetChat, toSend+".", "Markdown")
 							}
-						} else if strings.Contains(m, "For help, type") {
+						} else if strings.Contains(message, "For help, type") {
 							utils.CliExec(*data.Stdin, "say Server initialised!", data.NeedResult, *data.ConsoleOut)
 						}
 					}
