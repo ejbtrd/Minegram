@@ -1,4 +1,4 @@
-module Minegram
+module minegram
 
 go 1.15
 

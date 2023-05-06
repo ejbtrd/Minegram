@@ -1,9 +1,9 @@
 package modules
 
 import (
-	"Minegram/utils"
 	"fmt"
 	"io"
+	"minegram/utils"
 	"strconv"
 	"strings"
 
