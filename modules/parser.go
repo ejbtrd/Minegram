@@ -152,6 +152,9 @@ func Parser(data utils.ModuleData) {
 						_, _ = (*data.TeleBot).Send(*data.TargetChat, toSend+".", "Markdown")
 					} else if strings.Contains(message, "For help, type") {
 						utils.CliExec(*data.Stdin, "say Server initialised!", data.NeedResult, *data.ConsoleOut)
+						_, _ = (*data.TeleBot).Send(*data.TargetChat, "**Server started!**", "Markdown")
+					} else if strings.Contains(message, "All dimensions are saved") {
+						_, _ = (*data.TeleBot).Send(*data.TargetChat, "**Server stopped!**", "Markdown")
 					}
 				}()
 			}
