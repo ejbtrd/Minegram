@@ -46,7 +46,7 @@ func Auth(data utils.ModuleData) {
 		if existingID.TgID == 0 {
 			fmt.Println("Linking '" + strconv.FormatInt(m.Sender.ID, 10) + "' to '" + ign + "'")
 			(*data.GormDb).Create(&utils.Player{McIgn: ign, TgID: m.Sender.ID, LastGameMode: "survival", DidUserAuth: false})
-			(*data.TeleBot).Reply(m, "The Minecraft IGN `"+ign+"` has been successfully linked to the telegram account with id `"+strconv.FormatInt(m.Sender.ID, 10)+"`!", "Markdown")
+			(*data.TeleBot).Reply(m, "The Minecraft IGN `"+ign+"` has been successfully linked to the Telegram account with id `"+strconv.FormatInt(m.Sender.ID, 10)+"`!", "Markdown")
 			return
 		}
 
